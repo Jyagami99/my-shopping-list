@@ -10,12 +10,6 @@ beforeEach(async () => {
 describe("Testa POST /items ", () => {
   it("Deve retornar 201, se cadastrado um item no formato correto", async () => {
     const item = await createItem();
-    // const result = await supertest(app).post("/items").send({
-    //   title: item.title,
-    //   url: item.url,
-    //   description: item.description,
-    //   amount: item.amount,
-    // });
     const result = await supertest(app).post("/items").send(item);
     const status = result.status;
 
@@ -26,12 +20,6 @@ describe("Testa POST /items ", () => {
 
     await supertest(app).post("/items").send(item);
 
-    // const result = await supertest(app).post("/items").send({
-    //   title: item.title,
-    //   url: item.url,
-    //   description: item.description,
-    //   amount: item.amount,
-    // });
     const result = await supertest(app).post("/items").send(item);
     const status = result.status;
 
@@ -40,10 +28,44 @@ describe("Testa POST /items ", () => {
 });
 
 describe("Testa GET /items ", () => {
-  it.todo("Deve retornar status 200 e o body no formato de Array");
+  it("Deve retornar status 200 e o body no formato de Array", async () => {
+    const item = await createItem();
+
+    await supertest(app).post("/items").send(item);
+
+    const result = await supertest(app).get("/items");
+    const status = result.status;
+
+    expect(status).toEqual(200);
+    expect(result.body).toBeInstanceOf(Array);
+  });
 });
 
 describe("Testa GET /items/:id ", () => {
-  it.todo("Deve retornar status 200 e um objeto igual a o item cadastrado");
-  it.todo("Deve retornar status 404 caso não exista um item com esse id");
+  it("Deve retornar status 200 e um objeto igual a o item cadastrado", async () => {
+    const item = await createItem();
+
+    const createdItem = await supertest(app).post("/items").send(item);
+
+    const { body: newItem } = createdItem;
+
+    console.log({ newItem });
+
+    const result = await supertest(app).get(`/items/${newItem.id}`).send();
+
+    const status = result.status;
+
+    expect(status).toBe(200);
+    expect(newItem).toMatchObject(result.body);
+  });
+  it("Deve retornar status 404 caso não exista um item com esse id", async () => {
+    const result = await supertest(app).get("/items/1");
+    const status = result.status;
+
+    expect(status).toBe(404);
+  });
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
 });
